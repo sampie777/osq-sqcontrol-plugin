@@ -2,12 +2,16 @@ package nl.sajansen.sqcontrol
 
 import nl.sajansen.sqcontrol.gui.SourcePanel
 import nl.sajansen.sqcontrol.queItems.SqControlQueItem
+import objects.notifications.Notifications
 import objects.que.JsonQue
 import objects.que.QueItem
 import plugins.common.QueItemBasePlugin
 import java.awt.Color
 import java.net.URL
 import java.util.logging.Logger
+import javax.sound.midi.MidiDevice
+import javax.sound.midi.MidiSystem
+import javax.sound.midi.Receiver
 import javax.swing.Icon
 import javax.swing.ImageIcon
 import javax.swing.JComponent
@@ -23,6 +27,18 @@ class SqControlPlugin : QueItemBasePlugin {
     override val tabName = "SQ"
 
     internal val quickAccessColor = Color(230, 250, 233)
+    internal var midiDevice: MidiDevice? = null
+    internal var midiDeviceReceiver: Receiver? = null
+
+    override fun enable() {
+        super.enable()
+        getMidiDevice()
+    }
+
+    override fun disable() {
+        super.disable()
+        midiDevice?.close()
+    }
 
     override fun sourcePanel(): JComponent {
         return SourcePanel(this)
@@ -44,5 +60,22 @@ class SqControlPlugin : QueItemBasePlugin {
 
         logger.severe("Couldn't find imageIcon: $path")
         return null
+    }
+
+    private fun getMidiDevice() {
+        midiDevice = MidiSystem.getMidiDeviceInfo()
+                .toList()
+                .filter { it.name.contains("SQ") }
+                .map { MidiSystem.getMidiDevice(it) }
+                .find { it.maxReceivers != 0 }
+
+        if (midiDevice == null) {
+            logger.warning("Could not find SQ MIDI device")
+            Notifications.add("Could not find SQ MIDI device", "SQ Control")
+            return
+        }
+
+        midiDeviceReceiver = midiDevice!!.receiver
+        midiDevice!!.open()
     }
 }
