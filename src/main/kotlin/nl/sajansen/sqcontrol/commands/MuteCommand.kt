@@ -1,14 +1,14 @@
 package nl.sajansen.sqcontrol.commands
 
 
-import nl.sajansen.sqcontrol.ByteMidiMessage
+import nl.sajansen.sqcontrol.midi.ByteMidiMessage
 import nl.sajansen.sqcontrol.SqControlPlugin
 import nl.sajansen.sqcontrol.hexStringToByteArray
 import nl.sajansen.sqcontrol.queItems.SqControlQueItem
 import java.util.logging.Logger
 import javax.sound.midi.MidiMessage
 
-class MuteCommand : Command {
+object MuteCommand : Command {
     private val logger = Logger.getLogger(MuteCommand::class.java.name)
 
     override fun getAvailableActions(): Array<CommandEnum> {

@@ -21,8 +21,8 @@ class SourcePanel(private val plugin: SqControlPlugin) : JPanel() {
     private val logger = Logger.getLogger(SourcePanel::class.java.name)
 
     private val arrayOfCommands = arrayOf(
-        MuteCommand(),
-        LevelCommand()
+        MuteCommand,
+        LevelCommand
     )
 
     private val nameField = JTextField()
@@ -44,6 +44,7 @@ class SourcePanel(private val plugin: SqControlPlugin) : JPanel() {
 
         val itemListPanel = JPanel(GridLayout(0, 1))
         itemListPanel.add(midiQueItemPanel())
+        itemListPanel.add(LevelFadeQueItemPanel(plugin))
 
         val scrollPanelInnerPanel = JPanel(BorderLayout())
         scrollPanelInnerPanel.add(itemListPanel, BorderLayout.PAGE_START)
@@ -103,7 +104,7 @@ class SourcePanel(private val plugin: SqControlPlugin) : JPanel() {
         return try {
             (commandTypeComboBox.selectedItem as Command).inputsToQueItem(
                 plugin,
-                nameField.text,
+                nameField.text.trim(),
                 commandActionComboBox.selectedItem as CommandEnum,
                 channelsComboBox.selectedItem as CommandChannelEnum
             )

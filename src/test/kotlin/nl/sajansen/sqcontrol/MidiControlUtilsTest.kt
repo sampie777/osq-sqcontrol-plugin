@@ -1,5 +1,6 @@
 package nl.sajansen.sqcontrol
 
+import kotlin.math.round
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -55,5 +56,28 @@ class MidiControlUtilsTest {
     @Test
     fun testHexStringToByte() {
         assertEquals(-16, hexStringToByte("F0"))
+    }
+
+    @Test
+    fun testDBtoLevel() {
+        assertEquals(32639, dBtoLevel(10.0))
+        assertEquals(31527, dBtoLevel(5.0))
+        assertEquals(30300, dBtoLevel(0.0))
+        assertEquals(27969, dBtoLevel(-10.0))
+        assertEquals(23171, dBtoLevel(-30.0))
+        assertEquals(15728, dBtoLevel(-60.0))
+        assertEquals(0, dBtoLevel(-90.0))
+    }
+
+    @Test
+    fun testLevelTodB() {
+        assertEquals(10.0, round(levelTodB(32639)))
+        assertEquals(5.0, round(levelTodB(31534)))
+        assertEquals(0.0, round(levelTodB(30300)))
+        assertEquals(-10.0, round(levelTodB(27961)))
+        assertEquals(-40.0, round(levelTodB(20815)))
+        assertEquals(-80.0, round(levelTodB(11330)))
+        assertEquals(-90.0, round(levelTodB(9000)))
+        assertEquals(-90.0, round(levelTodB(0)))
     }
 }

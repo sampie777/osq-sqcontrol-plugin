@@ -1,15 +1,21 @@
 package nl.sajansen.sqcontrol.commands
 
 
-import nl.sajansen.sqcontrol.ByteMidiMessage
-import nl.sajansen.sqcontrol.SqControlPlugin
-import nl.sajansen.sqcontrol.hexStringToByteArray
+import nl.sajansen.sqcontrol.*
+import nl.sajansen.sqcontrol.midi.ByteMidiMessage
 import nl.sajansen.sqcontrol.queItems.SqControlQueItem
+import java.nio.ByteBuffer
 import java.util.logging.Logger
 import javax.sound.midi.MidiMessage
+import javax.sound.midi.Receiver
 
-class LevelCommand : Command {
+object LevelCommand : Command {
     private val logger = Logger.getLogger(LevelCommand::class.java.name)
+
+    const val minLevel = 0
+    val maxLevel = "7F7F".toInt(16)
+    const val minDBLevel = -90.0
+    const val maxDBLevel = 10.0
 
     override fun getAvailableActions(): Array<CommandEnum> {
         return CommandLevelAction.values() as Array<CommandEnum>
@@ -20,10 +26,10 @@ class LevelCommand : Command {
     }
 
     override fun inputsToQueItem(
-        plugin: SqControlPlugin,
-        name: String,
-        action: CommandEnum,
-        channel: CommandChannelEnum
+            plugin: SqControlPlugin,
+            name: String,
+            action: CommandEnum,
+            channel: CommandChannelEnum
     ): SqControlQueItem? {
         val channelHexValues = channel.hexValue.split(",")
 
@@ -79,6 +85,68 @@ class LevelCommand : Command {
             -5 -> "72,0A"
             -10 -> "6D,39"
             else -> "00,00"
+        }
+    }
+
+    fun getChannelLevel(plugin: SqControlPlugin, channel: CommandChannelEnum, callback: (currentLevel: Int) -> Unit) {
+        logger.info("Preparing request for channel level for channel: $channel")
+        registerChannelLevelRequest(plugin, channel, callback)
+        sendChannelLevelRequest(plugin, channel)
+        logger.info("Channel level request send for channel: $channel")
+    }
+
+    private fun registerChannelLevelRequest(plugin: SqControlPlugin, channel: CommandChannelEnum, callback: (currentLevel: Int) -> Unit) {
+        if (plugin.midiReceiveReceiver == null) {
+            logger.severe("MidiReceiveReceiver is null, cannot register channel request")
+            return
+        }
+
+        plugin.midiReceiveReceiver!!.registerChannelLevelRequest(channel, callback)
+    }
+
+    private fun sendChannelLevelRequest(plugin: SqControlPlugin, channel: CommandChannelEnum) {
+        val channelHexValues = channel.hexValue.split(",")
+
+        val messages = ArrayList<MidiMessage>()
+        messages.add(ByteMidiMessage(hexStringToByteArray("B0,63,${channelHexValues[0]}")))
+        messages.add(ByteMidiMessage(hexStringToByteArray("B0,62,${channelHexValues[1]}")))
+        messages.add(ByteMidiMessage(hexStringToByteArray("B0,60,7F")))
+
+        sendMessages(plugin.midiSendReceiver!!, messages)
+    }
+
+    fun setChannelLevel(receiver: Receiver, channel: CommandChannelEnum, level: Int) {
+        logger.info("Setting level for channel: $channel to: $level")
+
+        val messages = getMessagesForChannelLevelChange(channel, level)
+
+        sendMessages(receiver, messages)
+    }
+
+    fun getMessagesForChannelLevelChange(channel: CommandChannelEnum, level: Int): ArrayList<MidiMessage> {
+        val channelHexValues = channel.hexValue.split(",")
+        val (coarseValue, fineValue) = integerToLevelBytes(level)
+
+        val messages = java.util.ArrayList<MidiMessage>()
+        messages.add(ByteMidiMessage(hexStringToByteArray("B0,63,${channelHexValues[0]}")))
+        messages.add(ByteMidiMessage(hexStringToByteArray("B0,62,${channelHexValues[1]}")))
+        messages.add(ByteMidiMessage(hexStringToByteArray("B0,06") + coarseValue))
+        messages.add(ByteMidiMessage(hexStringToByteArray("B0,26") + fineValue))
+        return messages
+    }
+
+    fun integerToLevelBytes(level: Int): Pair<Byte, Byte> {
+        val nextLevelByteArray = ByteBuffer.allocate(Int.SIZE_BYTES).putInt(level).array()
+
+        val coarseValue = nextLevelByteArray[Int.SIZE_BYTES - 2]
+        val fineValue = nextLevelByteArray[Int.SIZE_BYTES - 1]
+        return Pair(coarseValue, fineValue)
+    }
+
+    private fun sendMessages(receiver: Receiver, messages: java.util.ArrayList<MidiMessage>) {
+        messages.forEach {
+            logger.info("Sending MIDI command: ${byteArrayStringToConfigString(byteArrayToByteArrayString(it.message))}")
+            receiver.send(it, -1)
         }
     }
 }

@@ -1,6 +1,6 @@
 package nl.sajansen.sqcontrol.queItems
 
-import nl.sajansen.sqcontrol.ByteMidiMessage
+import nl.sajansen.sqcontrol.midi.ByteMidiMessage
 import nl.sajansen.sqcontrol.SqControlPlugin
 import nl.sajansen.sqcontrol.byteArrayToByteArrayString
 import objects.que.JsonQue
@@ -31,8 +31,8 @@ class SqControlQueItemTest {
     @Test
     fun testToJson() {
         val messages = listOf(
-            ByteMidiMessage(byteArrayOf(-16, 127, 127)),
-            ByteMidiMessage(byteArrayOf(6, 5, -9))
+                ByteMidiMessage(byteArrayOf(-16, 127, 127)),
+                ByteMidiMessage(byteArrayOf(6, 5, -9))
         )
         val queItem = SqControlQueItem(SqControlPlugin(), "name", messages)
 

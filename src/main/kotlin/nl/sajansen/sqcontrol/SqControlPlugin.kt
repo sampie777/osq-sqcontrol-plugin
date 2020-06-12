@@ -1,6 +1,8 @@
 package nl.sajansen.sqcontrol
 
 import nl.sajansen.sqcontrol.gui.SourcePanel
+import nl.sajansen.sqcontrol.midi.MidiReceiver
+import nl.sajansen.sqcontrol.queItems.LevelFadeQueItem
 import nl.sajansen.sqcontrol.queItems.SqControlQueItem
 import objects.notifications.Notifications
 import objects.que.JsonQue
@@ -27,8 +29,10 @@ class SqControlPlugin : QueItemBasePlugin {
     override val tabName = "SQ"
 
     internal val quickAccessColor = Color(230, 250, 233)
-    internal var midiDevice: MidiDevice? = null
-    internal var midiDeviceReceiver: Receiver? = null
+    internal var midiInputDevice: MidiDevice? = null
+    internal var midiOutputDevice: MidiDevice? = null
+    internal var midiSendReceiver: Receiver? = null
+    internal var midiReceiveReceiver: MidiReceiver? = null
 
     override fun enable() {
         super.enable()
@@ -37,7 +41,7 @@ class SqControlPlugin : QueItemBasePlugin {
 
     override fun disable() {
         super.disable()
-        midiDevice?.close()
+        midiInputDevice?.close()
     }
 
     override fun sourcePanel(): JComponent {
@@ -49,7 +53,11 @@ class SqControlPlugin : QueItemBasePlugin {
     }
 
     override fun jsonToQueItem(jsonQueItem: JsonQue.QueItem): QueItem {
-        return SqControlQueItem.fromJson(this, jsonQueItem)
+        return when (jsonQueItem.className) {
+            SqControlQueItem::class.java.simpleName -> SqControlQueItem.fromJson(this, jsonQueItem)
+            LevelFadeQueItem::class.java.simpleName -> LevelFadeQueItem.fromJson(this, jsonQueItem)
+            else -> throw IllegalArgumentException("Invalid SqControlPlugin queue item: ${jsonQueItem.className}")
+        }
     }
 
     private fun createImageIcon(path: String): ImageIcon? {
@@ -63,19 +71,84 @@ class SqControlPlugin : QueItemBasePlugin {
     }
 
     private fun getMidiDevice() {
-        midiDevice = MidiSystem.getMidiDeviceInfo()
+        midiInputDevice = MidiSystem.getMidiDeviceInfo()
                 .toList()
                 .filter { it.name.contains("SQ") }
                 .map { MidiSystem.getMidiDevice(it) }
                 .find { it.maxReceivers != 0 }
+        midiOutputDevice = MidiSystem.getMidiDeviceInfo()
+                .toList()
+                .filter { it.name.contains("SQ") }
+                .map { MidiSystem.getMidiDevice(it) }
+                .find { it.maxTransmitters != 0 }
 
-        if (midiDevice == null) {
+        if (midiInputDevice == null) {
             logger.warning("Could not find SQ MIDI device")
             Notifications.add("Could not find SQ MIDI device", "SQ Control")
             return
         }
 
-        midiDeviceReceiver = midiDevice!!.receiver
-        midiDevice!!.open()
+        if (midiOutputDevice == null) {
+            logger.warning("Could not find SQ MIDI device (output)")
+            Notifications.add("Could not find SQ MIDI device (output)", "SQ Control")
+            return
+        }
+
+        // Register receiver for sending messages
+        try {
+            midiSendReceiver = midiInputDevice!!.receiver
+        } catch (e: Exception) {
+            logger.warning("Failed to register receiver")
+            e.printStackTrace()
+            Notifications.add(
+                    "Failed to setup outgoing connection with device: ${midiInputDevice?.deviceInfo?.name}: ${e.localizedMessage}",
+                    "Midi Control"
+            )
+            return
+        }
+
+        // Register receiver for transmitter
+        try {
+            midiReceiveReceiver = MidiReceiver()
+            midiOutputDevice!!.transmitter.receiver = midiReceiveReceiver!!
+        } catch (e: Exception) {
+            logger.warning("Failed to register transmitter")
+            e.printStackTrace()
+            Notifications.add(
+                    "Failed to setup incoming connection with device: ${midiInputDevice?.deviceInfo?.name}: ${e.localizedMessage}. Some functions may not work properly.",
+                    "Midi Control"
+            )
+            midiReceiveReceiver = null
+        }
+
+        // Open connection with device
+        try {
+            midiInputDevice!!.open()
+        } catch (e: Exception) {
+            logger.severe("Failed to open device: ${midiInputDevice?.deviceInfo?.name}")
+            e.printStackTrace()
+            Notifications.add(
+                    "Failed to connect with device: ${midiInputDevice?.deviceInfo?.name}: ${e.localizedMessage}",
+                    "Midi Control"
+            )
+            return
+        }
+
+        // Open connection with device
+        try {
+            midiOutputDevice!!.open()
+        } catch (e: Exception) {
+            logger.severe("Failed to open output device: ${midiInputDevice?.deviceInfo?.name}")
+            e.printStackTrace()
+            Notifications.add(
+                    "Failed to connect with output device: ${midiInputDevice?.deviceInfo?.name}: ${e.localizedMessage}",
+                    "Midi Control"
+            )
+            return
+        }
     }
+
+    fun isConnected() = midiInputDevice != null && midiSendReceiver != null
+
+    fun isOutputConnected() = midiOutputDevice != null && midiReceiveReceiver != null
 }

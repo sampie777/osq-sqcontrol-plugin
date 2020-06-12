@@ -1,4 +1,4 @@
-package nl.sajansen.sqcontrol
+package nl.sajansen.sqcontrol.midi
 
 import javax.sound.midi.MidiMessage
 

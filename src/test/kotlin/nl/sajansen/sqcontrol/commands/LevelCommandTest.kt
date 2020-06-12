@@ -2,6 +2,7 @@ package nl.sajansen.sqcontrol.commands
 
 import nl.sajansen.sqcontrol.SqControlPlugin
 import nl.sajansen.sqcontrol.byteArrayToByteArrayString
+import nl.sajansen.sqcontrol.hexStringToByte
 import nl.sajansen.sqcontrol.hexStringToByteArray
 import javax.sound.midi.MidiMessage
 import kotlin.test.Test
@@ -12,21 +13,21 @@ class LevelCommandTest {
 
     @Test
     fun testUpperCaseFirst() {
-        assertEquals("AbcDe", LevelCommand().upperCaseFirst("abcDe"))
+        assertEquals("AbcDe", LevelCommand.upperCaseFirst("abcDe"))
     }
 
     @Test
     fun testGenerateNameForQueItem() {
-        assertEquals("name", LevelCommand().generateNameForQueItem("name", CommandLevelAction.SET_0DB, CommandLevelChannels.CH2))
-        assertEquals("[CH2] Set 0db", LevelCommand().generateNameForQueItem("", CommandLevelAction.SET_0DB, CommandLevelChannels.CH2))
-        assertEquals("[CH2] Set m10db", LevelCommand().generateNameForQueItem("", CommandLevelAction.SET_M10DB, CommandLevelChannels.CH2))
-        assertEquals("[CH2] Increase", LevelCommand().generateNameForQueItem("", CommandLevelAction.INCREASE, CommandLevelChannels.CH2))
-        assertEquals("[CH2] Decrease", LevelCommand().generateNameForQueItem("", CommandLevelAction.DECREASE, CommandLevelChannels.CH2))
+        assertEquals("name", LevelCommand.generateNameForQueItem("name", CommandLevelAction.SET_0DB, CommandLevelChannels.CH2))
+        assertEquals("[CH2] Set 0db", LevelCommand.generateNameForQueItem("", CommandLevelAction.SET_0DB, CommandLevelChannels.CH2))
+        assertEquals("[CH2] Set m10db", LevelCommand.generateNameForQueItem("", CommandLevelAction.SET_M10DB, CommandLevelChannels.CH2))
+        assertEquals("[CH2] Increase", LevelCommand.generateNameForQueItem("", CommandLevelAction.INCREASE, CommandLevelChannels.CH2))
+        assertEquals("[CH2] Decrease", LevelCommand.generateNameForQueItem("", CommandLevelAction.DECREASE, CommandLevelChannels.CH2))
     }
 
     @Test
     fun testInputsToQueItemWithLevelCommand() {
-        val queItem = LevelCommand().inputsToQueItem(SqControlPlugin(), "", CommandLevelAction.SET_0DB, CommandLevelChannels.CH2)
+        val queItem = LevelCommand.inputsToQueItem(SqControlPlugin(), "", CommandLevelAction.SET_0DB, CommandLevelChannels.CH2)
 
         assertNotNull(queItem)
         assertEquals(4, queItem.messages.size)
@@ -38,7 +39,7 @@ class LevelCommandTest {
 
     @Test
     fun testInputsToQueItemWithAnotherLevelCommand() {
-        val queItem = LevelCommand().inputsToQueItem(SqControlPlugin(), "", CommandLevelAction.SET_M10DB, CommandLevelChannels.CH2)
+        val queItem = LevelCommand.inputsToQueItem(SqControlPlugin(), "", CommandLevelAction.SET_M10DB, CommandLevelChannels.CH2)
 
         assertNotNull(queItem)
         assertEquals(4, queItem.messages.size)
@@ -50,7 +51,7 @@ class LevelCommandTest {
 
     @Test
     fun testInputsToQueItemWithIncreaseCommand() {
-        val queItem = LevelCommand().inputsToQueItem(SqControlPlugin(), "", CommandLevelAction.INCREASE, CommandLevelChannels.CH2)
+        val queItem = LevelCommand.inputsToQueItem(SqControlPlugin(), "", CommandLevelAction.INCREASE, CommandLevelChannels.CH2)
 
         assertNotNull(queItem)
         assertEquals(3, queItem.messages.size)
@@ -61,7 +62,7 @@ class LevelCommandTest {
 
     @Test
     fun testInputsToQueItemWithDecreaseCommand() {
-        val queItem = LevelCommand().inputsToQueItem(SqControlPlugin(), "", CommandLevelAction.DECREASE, CommandLevelChannels.CH2)
+        val queItem = LevelCommand.inputsToQueItem(SqControlPlugin(), "", CommandLevelAction.DECREASE, CommandLevelChannels.CH2)
 
         assertNotNull(queItem)
         assertEquals(3, queItem.messages.size)
@@ -74,10 +75,30 @@ class LevelCommandTest {
     fun testAddMessagesForHexStringAbsoluteValue() {
         val messages = ArrayList<MidiMessage>()
 
-        LevelCommand().addMessagesForHexStringAbsoluteValue(messages, "ab,10")
+        LevelCommand.addMessagesForHexStringAbsoluteValue(messages, "ab,10")
 
         assertEquals(2, messages.size)
         assertEquals(byteArrayToByteArrayString(hexStringToByteArray("B0,06,ab")), byteArrayToByteArrayString(messages[0].message))
         assertEquals(byteArrayToByteArrayString(hexStringToByteArray("B0,26,10")), byteArrayToByteArrayString(messages[1].message))
+    }
+
+    @Test
+    fun testIntegerToLevelBytes() {
+        // This will convert the integer 4660 to bytes
+        val (coarseValue, fineValue) = LevelCommand.integerToLevelBytes(4660)
+
+        assertEquals(0, coarseValue.compareTo(hexStringToByte("12")))
+        assertEquals(0, fineValue.compareTo(hexStringToByte("34")))
+    }
+
+    @Test
+    fun testGetMessagesForChannelLevelChange() {
+        val messages = LevelCommand.getMessagesForChannelLevelChange(CommandLevelChannels.CH2, 4660)
+
+        assertEquals(4, messages.size)
+        assertEquals(byteArrayToByteArrayString(hexStringToByteArray("b0,63,40")), byteArrayToByteArrayString(messages[0].message))
+        assertEquals(byteArrayToByteArrayString(hexStringToByteArray("b0,62,01")), byteArrayToByteArrayString(messages[1].message))
+        assertEquals(byteArrayToByteArrayString(hexStringToByteArray("b0,06,12")), byteArrayToByteArrayString(messages[2].message))
+        assertEquals(byteArrayToByteArrayString(hexStringToByteArray("b0,26,34")), byteArrayToByteArrayString(messages[3].message))
     }
 }

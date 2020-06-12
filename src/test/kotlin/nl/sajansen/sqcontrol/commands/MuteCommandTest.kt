@@ -11,19 +11,19 @@ class MuteCommandTest {
 
     @Test
     fun testUpperCaseFirst() {
-        assertEquals("AbcDe", MuteCommand().upperCaseFirst("abcDe"))
+        assertEquals("AbcDe", MuteCommand.upperCaseFirst("abcDe"))
     }
 
     @Test
     fun testGenerateNameForQueItem() {
-        assertEquals("name", MuteCommand().generateNameForQueItem("name", CommandMuteAction.MUTE, CommandMuteChannels.CH2))
-        assertEquals("[CH2] Mute", MuteCommand().generateNameForQueItem("", CommandMuteAction.MUTE, CommandMuteChannels.CH2))
-        assertEquals("[CH2] Toggle mute", MuteCommand().generateNameForQueItem("", CommandMuteAction.TOGGLE, CommandMuteChannels.CH2))
+        assertEquals("name", MuteCommand.generateNameForQueItem("name", CommandMuteAction.MUTE, CommandMuteChannels.CH2))
+        assertEquals("[CH2] Mute", MuteCommand.generateNameForQueItem("", CommandMuteAction.MUTE, CommandMuteChannels.CH2))
+        assertEquals("[CH2] Toggle mute", MuteCommand.generateNameForQueItem("", CommandMuteAction.TOGGLE, CommandMuteChannels.CH2))
     }
 
     @Test
     fun testInputsToQueItemWithMuteCommand() {
-        val queItem = MuteCommand().inputsToQueItem(SqControlPlugin(), "", CommandMuteAction.MUTE, CommandMuteChannels.CH2)
+        val queItem = MuteCommand.inputsToQueItem(SqControlPlugin(), "", CommandMuteAction.MUTE, CommandMuteChannels.CH2)
 
         assertNotNull(queItem)
         assertEquals("[CH2] Mute", queItem.name)
@@ -36,7 +36,7 @@ class MuteCommandTest {
 
     @Test
     fun testInputsToQueItemWithUnmuteCommand() {
-        val queItem = MuteCommand().inputsToQueItem(SqControlPlugin(), "", CommandMuteAction.UNMUTE, CommandMuteChannels.CH2)
+        val queItem = MuteCommand.inputsToQueItem(SqControlPlugin(), "", CommandMuteAction.UNMUTE, CommandMuteChannels.CH2)
 
         assertNotNull(queItem)
         assertEquals("[CH2] Unmute", queItem.name)
@@ -49,7 +49,7 @@ class MuteCommandTest {
 
     @Test
     fun testInputsToQueItemWithToggleCommand() {
-        val queItem = MuteCommand().inputsToQueItem(SqControlPlugin(), "", CommandMuteAction.TOGGLE, CommandMuteChannels.CH2)
+        val queItem = MuteCommand.inputsToQueItem(SqControlPlugin(), "", CommandMuteAction.TOGGLE, CommandMuteChannels.CH2)
 
         assertNotNull(queItem)
         assertEquals("[CH2] Toggle mute", queItem.name)

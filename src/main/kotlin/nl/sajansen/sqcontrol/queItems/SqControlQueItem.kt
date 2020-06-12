@@ -1,6 +1,7 @@
 package nl.sajansen.sqcontrol.queItems
 
 import nl.sajansen.sqcontrol.*
+import nl.sajansen.sqcontrol.midi.ByteMidiMessage
 import objects.notifications.Notifications
 import objects.que.JsonQue
 import objects.que.QueItem
@@ -31,7 +32,7 @@ class SqControlQueItem(
     }
 
     override fun activate() {
-        if (plugin.midiDevice == null || plugin.midiDeviceReceiver == null) {
+        if (!plugin.isConnected()) {
             logger.warning("Not connected to SQ MIDI device")
             Notifications.add("Not connected to SQ MIDI device", "SQ Control")
             return
@@ -39,7 +40,7 @@ class SqControlQueItem(
 
         messages.forEach {
             logger.info("Sending MIDI command: ${byteArrayStringToConfigString(byteArrayToByteArrayString(it.message))}")
-            plugin.midiDeviceReceiver!!.send(it, -1)
+            plugin.midiSendReceiver!!.send(it, -1)
         }
     }
 
