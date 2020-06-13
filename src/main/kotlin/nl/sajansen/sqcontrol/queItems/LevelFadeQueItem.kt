@@ -26,9 +26,10 @@ class LevelFadeQueItem(
     override var executeAfterPrevious: Boolean = false
     override var quickAccessColor: Color? = plugin.quickAccessColor
 
-    internal var currentDBLevel = 0.0
-    internal var leveldBIncrement = 0.0
-    private var maxMessagesPerSecond = 20
+    internal var currentPercentage = 0.0
+    private val targetPercentage = dbToPercentage(targetDBLevel)
+    internal var percentageIncrement = 0.0
+    private var maxMessagesPerSecond = 50
     val timerInterval = 1000L / maxMessagesPerSecond
     internal var timer: Timer? = null
 
@@ -52,10 +53,6 @@ class LevelFadeQueItem(
         LevelCommand.getChannelLevel(plugin, channel) { currentLevel -> askForLevelCallback(currentLevel) }
     }
 
-    override fun deactivate() {
-        stopTimer()
-    }
-
     override fun toJson(): JsonQue.QueItem {
         val jsonItem = super.toJson()
         jsonItem.data["channel"] = channel.toString()
@@ -68,10 +65,11 @@ class LevelFadeQueItem(
         logger.info("Received current level: $currentLevel for channel: $channel")
         stopTimer()
 
-        this.currentDBLevel = levelTodB(currentLevel)
-        leveldBIncrement = calculateLevelIncrement(this.currentDBLevel)
+        currentPercentage = dbToPercentage(levelTodB(currentLevel))
+        percentageIncrement = calculatePercentageIncrement(currentPercentage)
 
         if (duration == 0L) {
+            logger.info("Duration = 0; skipping timer and sendig target level directly")
             LevelCommand.setChannelLevel(plugin.midiSendReceiver!!, channel, dBtoLevel(targetDBLevel))
             return
         }
@@ -79,13 +77,13 @@ class LevelFadeQueItem(
         restartTimer()
     }
 
-    internal fun calculateLevelIncrement(currentDBLevel: Double): Double {
-        val levelDifference = targetDBLevel - currentDBLevel
+    internal fun calculatePercentageIncrement(currentPercentage: Double): Double {
+        val difference = targetPercentage - currentPercentage
         val stepCount = max(1, duration / timerInterval)
-        return levelDifference / stepCount
+        return difference / stepCount
     }
 
-    private fun stopTimer() {
+    internal fun stopTimer() {
         if (timer == null) {
             return
         }
@@ -106,37 +104,42 @@ class LevelFadeQueItem(
         timer!!.scheduleAtFixedRate(LevelTimerTask(this), timerInterval, timerInterval)
     }
 
-    internal fun getNextLeveldB(): Double {
+    internal fun getNextPercentage(): Double {
         // Check if current level is within increment resolution to target level
-        if (abs(targetDBLevel - currentDBLevel) < abs(leveldBIncrement)) {
+        if (abs(targetPercentage - currentPercentage) < max(abs(percentageIncrement), 0.1)) {
+            logger.info("Max reached within increment resolution")
             stopTimer()
-            currentDBLevel = targetDBLevel
-            return targetDBLevel
+            currentPercentage = targetPercentage
+            return targetPercentage
         }
 
         // Check for overshoot
-        if (targetDBLevel > currentDBLevel && leveldBIncrement < 0
-                || targetDBLevel < currentDBLevel && leveldBIncrement > 0) {
-            currentDBLevel = targetDBLevel
-            return targetDBLevel
+        if ((targetPercentage > currentPercentage && percentageIncrement < 0.0)
+                || (targetPercentage < currentPercentage && percentageIncrement > 0.0)) {
+            logger.warning("Level overshoot: target=$targetPercentage; current=$currentPercentage; increment=$percentageIncrement")
+            stopTimer()
+            currentPercentage = targetPercentage
+            return targetPercentage
         }
 
-        currentDBLevel += leveldBIncrement
+        currentPercentage += percentageIncrement
 
         // Check for min/max boundaries
-        if (currentDBLevel < LevelCommand.minDBLevel) {
-            currentDBLevel = LevelCommand.minDBLevel
-        } else if (currentDBLevel > LevelCommand.maxDBLevel) {
-            currentDBLevel = LevelCommand.maxDBLevel
+        if (currentPercentage < 0) {
+            logger.warning("Current percentage came below 0: $currentPercentage")
+            currentPercentage = 0.0
+        } else if (currentPercentage > 100) {
+            logger.warning("Current percentage came above 100: $currentPercentage")
+            currentPercentage = 100.0
         }
 
-        return currentDBLevel
+        return currentPercentage
     }
 }
 
 class LevelTimerTask(private val queItem: LevelFadeQueItem) : TimerTask() {
     override fun run() {
-        val nextLevel = queItem.getNextLeveldB()
-        LevelCommand.setChannelLevel(queItem.plugin.midiSendReceiver!!, queItem.channel, dBtoLevel(nextLevel))
+        val nextPercentage = queItem.getNextPercentage()
+        LevelCommand.setChannelLevel(queItem.plugin.midiSendReceiver!!, queItem.channel, dBtoLevel(percentageToDb(nextPercentage)))
     }
 }

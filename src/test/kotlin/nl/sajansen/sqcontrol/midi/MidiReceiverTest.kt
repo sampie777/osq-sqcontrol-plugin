@@ -14,7 +14,7 @@ class MidiReceiverTest {
     @Test
     fun testGetCallbackForChannel() {
         val channel = CommandLevelChannels.CH1
-        val receiver = MidiReceiver()
+        val receiver = SqMidiReceiver()
         receiver.registerChannelLevelRequest(channel) {}
 
         val byteArrayString = byteArrayToByteArrayString(hexStringToByteArray(channel.hexValue))
@@ -27,7 +27,7 @@ class MidiReceiverTest {
     @Test
     fun testGetCallbackForIncorrectChannel() {
         val channel = CommandLevelChannels.CH1
-        val receiver = MidiReceiver()
+        val receiver = SqMidiReceiver()
         receiver.registerChannelLevelRequest(CommandLevelChannels.CH2) {}
 
         val byteArrayString = byteArrayToByteArrayString(hexStringToByteArray(channel.hexValue))
@@ -39,7 +39,7 @@ class MidiReceiverTest {
     @Test
     fun testGetCallbackForNoChannel() {
         val channel = CommandLevelChannels.CH1
-        val receiver = MidiReceiver()
+        val receiver = SqMidiReceiver()
 
         val byteArrayString = byteArrayToByteArrayString(hexStringToByteArray(channel.hexValue))
         val resultPair = receiver.getCallbackForChannel(byteArrayString)
@@ -51,7 +51,7 @@ class MidiReceiverTest {
     fun testProcessChannelLevelRequests() {
         var resultLevel = 0
         val channel = CommandLevelChannels.CH1
-        val receiver = MidiReceiver()
+        val receiver = SqMidiReceiver()
         receiver.registerChannelLevelRequest(channel) { currentLevel -> resultLevel = currentLevel }
 
         val byteArrayString = byteArrayToByteArrayString(hexStringToByteArray(channel.hexValue))
@@ -67,7 +67,7 @@ class MidiReceiverTest {
     fun testSendAndProcessMessages() {
         var resultLevel = 0
         val channel = CommandLevelChannels.CH2
-        val receiver = MidiReceiver()
+        val receiver = SqMidiReceiver()
         receiver.registerChannelLevelRequest(channel) { currentLevel -> resultLevel = currentLevel }
 
         receiver.send(ByteMidiMessage(hexStringToByteArray("b0,63,40")), 0)

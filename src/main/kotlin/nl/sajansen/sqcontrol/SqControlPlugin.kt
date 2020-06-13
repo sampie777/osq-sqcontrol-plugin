@@ -1,7 +1,7 @@
 package nl.sajansen.sqcontrol
 
 import nl.sajansen.sqcontrol.gui.SourcePanel
-import nl.sajansen.sqcontrol.midi.MidiReceiver
+import nl.sajansen.sqcontrol.midi.SqMidiReceiver
 import nl.sajansen.sqcontrol.queItems.LevelFadeQueItem
 import nl.sajansen.sqcontrol.queItems.SqControlQueItem
 import objects.notifications.Notifications
@@ -32,7 +32,7 @@ class SqControlPlugin : QueItemBasePlugin {
     internal var midiInputDevice: MidiDevice? = null
     internal var midiOutputDevice: MidiDevice? = null
     internal var midiSendReceiver: Receiver? = null
-    internal var midiReceiveReceiver: MidiReceiver? = null
+    internal var midiReceiveReceiver: SqMidiReceiver? = null
 
     override fun enable() {
         super.enable()
@@ -109,7 +109,7 @@ class SqControlPlugin : QueItemBasePlugin {
 
         // Register receiver for transmitter
         try {
-            midiReceiveReceiver = MidiReceiver()
+            midiReceiveReceiver = SqMidiReceiver()
             midiOutputDevice!!.transmitter.receiver = midiReceiveReceiver!!
         } catch (e: Exception) {
             logger.warning("Failed to register transmitter")
@@ -136,7 +136,9 @@ class SqControlPlugin : QueItemBasePlugin {
 
         // Open connection with device
         try {
-            midiOutputDevice!!.open()
+            if (!midiOutputDevice!!.isOpen) {
+                midiOutputDevice!!.open()
+            }
         } catch (e: Exception) {
             logger.severe("Failed to open output device: ${midiInputDevice?.deviceInfo?.name}")
             e.printStackTrace()

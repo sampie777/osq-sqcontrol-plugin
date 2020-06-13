@@ -2,13 +2,14 @@ package nl.sajansen.sqcontrol.midi
 
 import nl.sajansen.sqcontrol.*
 import nl.sajansen.sqcontrol.commands.CommandChannelEnum
+import java.io.File
 import java.util.logging.Logger
 import javax.sound.midi.MidiMessage
 import javax.sound.midi.Receiver
 
-class MidiReceiver : Receiver {
+class SqMidiReceiver : Receiver {
 
-    private val logger = Logger.getLogger(MidiReceiver::class.java.name)
+    private val logger = Logger.getLogger(SqMidiReceiver::class.java.name)
 
     private val msbMessageCode = hexStringToByte("63")
     private val lsbMessageCode = hexStringToByte("62")
@@ -19,19 +20,21 @@ class MidiReceiver : Receiver {
     private val levelByteArray = byteArrayOf(0, 0)
     private val channelLevelRequests = HashMap<CommandChannelEnum, (currentLevel: Int) -> Unit>()
 
+//    private val logs = ArrayList<Triple<Long, Int, Double>>()
+
     override fun send(message: MidiMessage, timestamp: Long) {
         if (channelLevelRequests.isEmpty()) {
             return
         }
 
-        processMessage(message)
+        processMessage(message, timestamp)
     }
 
     override fun close() {
         logger.info("Connection closed")
     }
 
-    private fun processMessage(message: MidiMessage) {
+    private fun processMessage(message: MidiMessage, timestamp: Long) {
         when (0) {
             msbMessageCode.compareTo(message.message[1]) -> {
                 channelByteArray[0] = message.message[2]
@@ -49,6 +52,14 @@ class MidiReceiver : Receiver {
                 val level = byteArrayToInt(levelByteArray)
 
                 processChannelLevelRequests(channel, level)
+//                logs.add(Triple(timestamp, level, levelTodB(level)))
+//                println(level)
+//                if (channelLevelRequests.isNotEmpty()) {
+//                    val file = File("log.csv")
+//                    logs.forEach {
+//                        file.appendText("${it.first};${it.second};${it.third}\n")
+//                    }
+//                }
             }
             else -> {
                 logger.info("Unknown message received")

@@ -1,5 +1,6 @@
 package nl.sajansen.sqcontrol
 
+import kotlin.math.abs
 import kotlin.math.round
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -79,5 +80,27 @@ class MidiControlUtilsTest {
         assertEquals(-80.0, round(levelTodB(11330)))
         assertEquals(-90.0, round(levelTodB(9000)))
         assertEquals(-90.0, round(levelTodB(0)))
+    }
+
+    @Test
+    fun testDbToPercentage() {
+        assertEquals(0.0, round(dbToPercentage(-90.0)))
+        assertEquals(7.0, round(dbToPercentage(-50.0)))
+        assertEquals(13.0, round(dbToPercentage(-40.0)))
+        assertEquals(42.0, round(dbToPercentage(-20.0)))
+        assertEquals(50.0, round(dbToPercentage(-10.0)))
+        assertEquals(75.0, round(dbToPercentage(0.0)))
+        assertEquals(100.0, round(dbToPercentage(10.0)))
+    }
+
+    @Test
+    fun testPercentageToDb() {
+        assertEquals(-90.0, round(percentageToDb(0.0)))
+        assertEquals(-50.0, round(percentageToDb(7.0)))
+        assertEquals(-40.0, round(percentageToDb(13.0)))
+        assertEquals(-20.0, round(percentageToDb(41.5)))
+        assertEquals(-10.0, round(percentageToDb(50.0)))
+        assertEquals(0.0, abs(round(percentageToDb(75.0))))
+        assertEquals(10.0, round(percentageToDb(100.0)))
     }
 }

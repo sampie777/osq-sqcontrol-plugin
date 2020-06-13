@@ -124,3 +124,23 @@ fun levelTodB(level: Int): Double {
 
     return conversionFactors[boundary] * log10(level / conversionOffsets[boundary])
 }
+
+fun dbToPercentage(db: Double): Double {
+    return when {
+        db < -50 -> (db + 90.0) / 5.6940948286767
+        db < -40 -> (db + 61.6073195579716) / 1.63808721348403
+        db < -20 -> (db + 49.2545361976067) / 0.701155050510185
+        db < -10 -> (db + 68.8627097646669) / 1.17652098817209
+        else -> (db + 30.0710250764071) / 0.400710250764071
+    }
+}
+
+fun percentageToDb(percentage: Double): Double {
+    return when {
+        percentage < 7.085898395656307 -> 5.6940948286767 * percentage - 90.0
+        percentage < 13.198986716094781 -> 1.63808721348403 * percentage - 61.6073195579716
+        percentage < 41.531524091706 -> 0.701155050510185 * percentage - 49.2545361976067
+        percentage < 50.08862398238087 -> 1.17652098817209 * percentage - 68.8627097646669
+        else -> 0.400710250764071 * percentage - 30.0710250764071
+    }
+}

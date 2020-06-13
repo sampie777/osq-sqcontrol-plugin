@@ -2,7 +2,7 @@ package nl.sajansen.sqcontrol.queItems
 
 import nl.sajansen.sqcontrol.SqControlPlugin
 import nl.sajansen.sqcontrol.commands.CommandLevelChannels
-import nl.sajansen.sqcontrol.commands.LevelCommand
+import nl.sajansen.sqcontrol.percentageToDb
 import objects.que.JsonQue
 import java.util.*
 import kotlin.test.Test
@@ -51,160 +51,160 @@ class LevelFadeQueItemTest {
 
     @Test
     fun testGetNextLevelChangesCurrentLevel() {
-        val queItem = LevelFadeQueItem(plugin, "name", CommandLevelChannels.CH1, -1.0, 1000)
-        queItem.currentDBLevel = -10.0
-        queItem.leveldBIncrement = 1.0
+        val queItem = LevelFadeQueItem(plugin, "name", CommandLevelChannels.CH1, percentageToDb(80.0), 1000)
+        queItem.currentPercentage = 50.0
+        queItem.percentageIncrement = 1.0
 
-        val value = queItem.getNextLeveldB()
+        val value = queItem.getNextPercentage()
 
-        assertEquals(-9.0, value)
-        assertEquals(value, queItem.currentDBLevel)
-        assertEquals(1.0, queItem.leveldBIncrement)
+        assertEquals(51.0, value)
+        assertEquals(value, queItem.currentPercentage)
+        assertEquals(1.0, queItem.percentageIncrement)
     }
 
     @Test
     fun testGetNextLevelChangesWithLevelCloseToTargetLevel() {
-        val queItem = LevelFadeQueItem(plugin, "name", CommandLevelChannels.CH1, -1.0, 1000)
-        queItem.currentDBLevel = -2.0
-        queItem.leveldBIncrement = 5.0
+        val queItem = LevelFadeQueItem(plugin, "name", CommandLevelChannels.CH1, percentageToDb(80.0), 1000)
+        queItem.currentPercentage = 78.0
+        queItem.percentageIncrement = 5.0
 
-        assertEquals(-1.0, queItem.getNextLeveldB())
+        assertEquals(80.0, queItem.getNextPercentage())
     }
 
     @Test
     fun testGetNextLevelChangesWithLevelCloseToTargetLevel2() {
-        val queItem = LevelFadeQueItem(plugin, "name", CommandLevelChannels.CH1, -1.0, 1000)
-        queItem.currentDBLevel = 0.0
-        queItem.leveldBIncrement = -5.0
+        val queItem = LevelFadeQueItem(plugin, "name", CommandLevelChannels.CH1, percentageToDb(80.0), 1000)
+        queItem.currentPercentage = 82.0
+        queItem.percentageIncrement = -5.0
 
-        assertEquals(-1.0, queItem.getNextLeveldB())
+        assertEquals(80.0, queItem.getNextPercentage())
     }
 
     @Test
     fun testGetNextLevelChangesWithLevelFurtherFromTargetLevel() {
-        val queItem = LevelFadeQueItem(plugin, "name", CommandLevelChannels.CH1, -1.0, 1000)
-        queItem.currentDBLevel = -6.0
-        queItem.leveldBIncrement = 5.0
+        val queItem = LevelFadeQueItem(plugin, "name", CommandLevelChannels.CH1, percentageToDb(80.0), 1000)
+        queItem.currentPercentage = 75.0
+        queItem.percentageIncrement = 5.0
 
-        assertEquals(-1.0, queItem.getNextLeveldB())
+        assertEquals(80.0, queItem.getNextPercentage())
     }
 
     @Test
     fun testGetNextLevelChangesWithLevelOnTargetLevel() {
-        val queItem = LevelFadeQueItem(plugin, "name", CommandLevelChannels.CH1, -1.0, 1000)
-        queItem.currentDBLevel = -1.0
-        queItem.leveldBIncrement = 5.0
+        val queItem = LevelFadeQueItem(plugin, "name", CommandLevelChannels.CH1, percentageToDb(80.0), 1000)
+        queItem.currentPercentage = 80.0
+        queItem.percentageIncrement = 5.0
         queItem.timer = Timer()
 
-        assertEquals(-1.0, queItem.getNextLeveldB())
+        assertEquals(80.0, queItem.getNextPercentage())
         assertNull(queItem.timer)
     }
 
     @Test
     fun testGetNextLevelChangesWithLevelRoundedOnTargetLevel() {
-        val queItem = LevelFadeQueItem(plugin, "name", CommandLevelChannels.CH1, -1.0, 1000)
-        queItem.currentDBLevel = -1.01
-        queItem.leveldBIncrement = 5.0
+        val queItem = LevelFadeQueItem(plugin, "name", CommandLevelChannels.CH1, percentageToDb(80.0), 1000)
+        queItem.currentPercentage = 79.9
+        queItem.percentageIncrement = 5.0
 
-        assertEquals(-1.0, queItem.getNextLeveldB())
+        assertEquals(80.0, queItem.getNextPercentage())
     }
 
     @Test
     fun testGetNextLevelChangesWithLevelBelowMinimum() {
-        val queItem = LevelFadeQueItem(plugin, "name", CommandLevelChannels.CH1, -1.0, 1000)
-        queItem.currentDBLevel = LevelCommand.minDBLevel - 10
-        queItem.leveldBIncrement = 5.0
+        val queItem = LevelFadeQueItem(plugin, "name", CommandLevelChannels.CH1, percentageToDb(80.0), 1000)
+        queItem.currentPercentage = -10.0
+        queItem.percentageIncrement = 5.0
 
-        assertEquals(LevelCommand.minDBLevel, queItem.getNextLeveldB())
+        assertEquals(0.0, queItem.getNextPercentage())
     }
 
     @Test
     fun testGetNextLevelChangesWithLevelJustBelowMinimum() {
-        val queItem = LevelFadeQueItem(plugin, "name", CommandLevelChannels.CH1, -1.0, 1000)
-        queItem.currentDBLevel = LevelCommand.minDBLevel - 1.0
-        queItem.leveldBIncrement = 5.0
+        val queItem = LevelFadeQueItem(plugin, "name", CommandLevelChannels.CH1, percentageToDb(80.0), 1000)
+        queItem.currentPercentage = -1.0
+        queItem.percentageIncrement = 5.0
 
-        assertEquals(LevelCommand.minDBLevel + 4, queItem.getNextLeveldB())
+        assertEquals(4.0, queItem.getNextPercentage())
     }
 
     @Test
     fun testGetNextLevelChangesWithLevelAboveMax() {
-        val queItem = LevelFadeQueItem(plugin, "name", CommandLevelChannels.CH1, -1.0, 1000)
-        queItem.currentDBLevel = LevelCommand.maxDBLevel + 10
-        queItem.leveldBIncrement = -5.0
+        val queItem = LevelFadeQueItem(plugin, "name", CommandLevelChannels.CH1, percentageToDb(80.0), 1000)
+        queItem.currentPercentage = 110.0
+        queItem.percentageIncrement = -5.0
 
-        assertEquals(LevelCommand.maxDBLevel, queItem.getNextLeveldB())
+        assertEquals(100.0, queItem.getNextPercentage())
     }
 
     @Test
     fun testGetNextLevelChangesWithLevelJustAboveMax() {
-        val queItem = LevelFadeQueItem(plugin, "name", CommandLevelChannels.CH1, -1.0, 1000)
-        queItem.currentDBLevel = LevelCommand.maxDBLevel + 1.0
-        queItem.leveldBIncrement = -5.0
+        val queItem = LevelFadeQueItem(plugin, "name", CommandLevelChannels.CH1, percentageToDb(80.0), 1000)
+        queItem.currentPercentage = 101.0
+        queItem.percentageIncrement = -5.0
 
-        assertEquals(LevelCommand.maxDBLevel - 4, queItem.getNextLeveldB())
+        assertEquals(96.0, queItem.getNextPercentage())
     }
 
     @Test
     fun testGetNextLevelChangesWithLevelAtTheWrongSide() {
-        val queItem = LevelFadeQueItem(plugin, "name", CommandLevelChannels.CH1, -1.0, 1000)
-        queItem.currentDBLevel = 10.0
-        queItem.leveldBIncrement = 5.0
+        val queItem = LevelFadeQueItem(plugin, "name", CommandLevelChannels.CH1, percentageToDb(80.0), 1000)
+        queItem.currentPercentage = 90.0
+        queItem.percentageIncrement = 5.0
 
-        assertEquals(-1.0, queItem.getNextLeveldB())
+        assertEquals(80.0, queItem.getNextPercentage())
     }
 
     @Test
     fun testGetNextLevelChangesWithLevelAtTheWrongSide2() {
-        val queItem = LevelFadeQueItem(plugin, "name", CommandLevelChannels.CH1, -1.0, 1000)
-        queItem.currentDBLevel = -10.0
-        queItem.leveldBIncrement = -5.0
+        val queItem = LevelFadeQueItem(plugin, "name", CommandLevelChannels.CH1, percentageToDb(80.0), 1000)
+        queItem.currentPercentage = 70.0
+        queItem.percentageIncrement = -5.0
 
-        assertEquals(-1.0, queItem.getNextLeveldB())
+        assertEquals(80.0, queItem.getNextPercentage())
     }
 
     @Test
     fun testDeactivateStopsTimer() {
-        val queItem = LevelFadeQueItem(plugin, "name", CommandLevelChannels.CH1, -1.0, 1000)
+        val queItem = LevelFadeQueItem(plugin, "name", CommandLevelChannels.CH1, percentageToDb(80.0), 1000)
 
         // When
-        queItem.deactivate()
+        queItem.stopTimer()
 
         assertNull(queItem.timer)
 
         // When
         queItem.timer = Timer()
-        queItem.deactivate()
+        queItem.stopTimer()
 
         assertNull(queItem.timer)
     }
 
     @Test
     fun testCalculateTimingAndLevelIncrement() {
-        val queItem = LevelFadeQueItem(plugin, "name", CommandLevelChannels.CH1, -1.0, 1000)
+        val queItem = LevelFadeQueItem(plugin, "name", CommandLevelChannels.CH1, percentageToDb(80.0), 1000)
         val timeScaleFactor = queItem.timerInterval / 100.0
 
-        val increment = queItem.calculateLevelIncrement(-10.0)
+        val increment = queItem.calculatePercentageIncrement(40.0)
 
-        assertEquals(timeScaleFactor * 0.9, increment)
+        assertEquals(timeScaleFactor * 4.0, increment)
     }
 
     @Test
     fun testCalculateTimingAndLevelIncrement2() {
-        val queItem = LevelFadeQueItem(plugin, "name", CommandLevelChannels.CH1, -1.0, 2000)
+        val queItem = LevelFadeQueItem(plugin, "name", CommandLevelChannels.CH1, percentageToDb(80.0), 2000)
         val timeScaleFactor = queItem.timerInterval / 100.0
 
-        val increment = queItem.calculateLevelIncrement(-11.0)
+        val increment = queItem.calculatePercentageIncrement(12.0)
 
-        assertEquals(timeScaleFactor * 0.5, increment)
+        assertEquals(timeScaleFactor * 3.4, increment)
     }
 
     @Test
     fun testCalculateLevelIncrementWithZeroDelay() {
-        val queItem = LevelFadeQueItem(plugin, "name", CommandLevelChannels.CH1, -1.0, 0)
+        val queItem = LevelFadeQueItem(plugin, "name", CommandLevelChannels.CH1, percentageToDb(80.0), 0)
 
-        val increment = queItem.calculateLevelIncrement(-10.0)
+        val increment = queItem.calculatePercentageIncrement(40.0)
 
-        assertEquals(9.0, increment)
+        assertEquals(40.0, increment)
     }
 }
