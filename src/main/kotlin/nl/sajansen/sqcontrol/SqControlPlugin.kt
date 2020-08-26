@@ -5,7 +5,7 @@ import nl.sajansen.sqcontrol.midi.SqMidiReceiver
 import nl.sajansen.sqcontrol.queItems.LevelFadeQueItem
 import nl.sajansen.sqcontrol.queItems.SqControlQueItem
 import objects.notifications.Notifications
-import objects.que.JsonQue
+import objects.que.JsonQueue
 import objects.que.QueItem
 import plugins.common.QueItemBasePlugin
 import java.awt.Color
@@ -52,7 +52,7 @@ class SqControlPlugin : QueItemBasePlugin {
         throw NotImplementedError("This method is deprecated")
     }
 
-    override fun jsonToQueItem(jsonQueItem: JsonQue.QueItem): QueItem {
+    override fun jsonToQueItem(jsonQueItem: JsonQueue.QueueItem): QueItem {
         return when (jsonQueItem.className) {
             SqControlQueItem::class.java.simpleName -> SqControlQueItem.fromJson(this, jsonQueItem)
             LevelFadeQueItem::class.java.simpleName -> LevelFadeQueItem.fromJson(this, jsonQueItem)

@@ -34,7 +34,7 @@ class SqMidiReceiver : Receiver {
         logger.info("Connection closed")
     }
 
-    private fun processMessage(message: MidiMessage, timestamp: Long) {
+    private fun processMessage(message: MidiMessage, @Suppress("unused_parameter") timestamp: Long) {
         when (0) {
             msbMessageCode.compareTo(message.message[1]) -> {
                 channelByteArray[0] = message.message[2]

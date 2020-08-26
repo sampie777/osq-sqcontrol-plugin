@@ -17,10 +17,12 @@ object LevelCommand : Command {
     const val minDBLevel = -90.0
     const val maxDBLevel = 10.0
 
+    @Suppress("UNCHECKED_CAST")
     override fun getAvailableActions(): Array<CommandEnum> {
         return CommandLevelAction.values() as Array<CommandEnum>
     }
 
+    @Suppress("UNCHECKED_CAST")
     override fun getAvailableChannels(): Array<CommandChannelEnum> {
         return CommandLevelChannels.values() as Array<CommandChannelEnum>
     }

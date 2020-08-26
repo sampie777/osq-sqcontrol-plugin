@@ -3,7 +3,7 @@ package nl.sajansen.sqcontrol.queItems
 import nl.sajansen.sqcontrol.midi.ByteMidiMessage
 import nl.sajansen.sqcontrol.SqControlPlugin
 import nl.sajansen.sqcontrol.byteArrayToByteArrayString
-import objects.que.JsonQue
+import objects.que.JsonQueue
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -11,7 +11,7 @@ class SqControlQueItemTest {
 
     @Test
     fun testFromJson() {
-        val jsonQueItem = JsonQue.QueItem(
+        val jsonQueItem = JsonQueue.QueueItem(
             "",
             "",
             "name",

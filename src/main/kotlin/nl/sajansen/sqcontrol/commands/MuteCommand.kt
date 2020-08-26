@@ -11,10 +11,12 @@ import javax.sound.midi.MidiMessage
 object MuteCommand : Command {
     private val logger = Logger.getLogger(MuteCommand::class.java.name)
 
+    @Suppress("UNCHECKED_CAST")
     override fun getAvailableActions(): Array<CommandEnum> {
         return CommandMuteAction.values() as Array<CommandEnum>
     }
 
+    @Suppress("UNCHECKED_CAST")
     override fun getAvailableChannels(): Array<CommandChannelEnum> {
         return CommandMuteChannels.values() as Array<CommandChannelEnum>
     }

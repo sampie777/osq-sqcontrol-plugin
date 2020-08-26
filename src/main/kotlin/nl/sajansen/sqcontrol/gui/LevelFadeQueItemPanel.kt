@@ -11,6 +11,7 @@ import objects.notifications.Notifications
 import objects.que.Que
 import java.awt.BorderLayout
 import java.awt.Color
+import java.awt.Dimension
 import java.awt.GridLayout
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
@@ -44,6 +45,7 @@ class LevelFadeQueItemPanel(private val plugin: SqControlPlugin) : JPanel() {
         nameField.toolTipText = "Queue item name"
 
         targetLevelInput.editor = JSpinner.NumberEditor(targetLevelInput, "0.0")
+        targetLevelInput.preferredSize = Dimension(targetLevelInput.preferredSize.height, 10)
 
         val addButton = JButton("+")
         addButton.toolTipText = "Click or drag to add"

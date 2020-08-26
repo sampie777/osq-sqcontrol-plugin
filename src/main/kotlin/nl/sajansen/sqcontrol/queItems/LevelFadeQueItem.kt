@@ -5,7 +5,7 @@ import nl.sajansen.sqcontrol.commands.CommandChannelEnum
 import nl.sajansen.sqcontrol.commands.CommandLevelChannels
 import nl.sajansen.sqcontrol.commands.LevelCommand
 import objects.notifications.Notifications
-import objects.que.JsonQue
+import objects.que.JsonQueue
 import objects.que.QueItem
 import java.awt.Color
 import java.util.*
@@ -34,7 +34,7 @@ class LevelFadeQueItem(
     internal var timer: Timer? = null
 
     companion object {
-        fun fromJson(plugin: SqControlPlugin, jsonQueItem: JsonQue.QueItem): LevelFadeQueItem {
+        fun fromJson(plugin: SqControlPlugin, jsonQueItem: JsonQueue.QueueItem): LevelFadeQueItem {
             val channel = CommandLevelChannels.valueOf(jsonQueItem.data["channel"]!!)
             val targetLevel = jsonQueItem.data["targetLevel"]!!.toDouble()
             val duration = jsonQueItem.data["duration"]!!.toLong()
@@ -53,7 +53,7 @@ class LevelFadeQueItem(
         LevelCommand.getChannelLevel(plugin, channel) { currentLevel -> askForLevelCallback(currentLevel) }
     }
 
-    override fun toJson(): JsonQue.QueItem {
+    override fun toJson(): JsonQueue.QueueItem {
         val jsonItem = super.toJson()
         jsonItem.data["channel"] = channel.toString()
         jsonItem.data["targetLevel"] = targetDBLevel.toString()

@@ -3,7 +3,7 @@ package nl.sajansen.sqcontrol.queItems
 import nl.sajansen.sqcontrol.SqControlPlugin
 import nl.sajansen.sqcontrol.commands.CommandLevelChannels
 import nl.sajansen.sqcontrol.percentageToDb
-import objects.que.JsonQue
+import objects.que.JsonQueue
 import java.util.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -15,7 +15,7 @@ class LevelFadeQueItemTest {
     private val plugin = SqControlPlugin()
 
     @Test
-    fun testToJsonQueItem() {
+    fun testToJsonQueueItem() {
         val queItem = LevelFadeQueItem(plugin, "name", CommandLevelChannels.CH1, -1.0, 1000)
 
         val jsonQueItem = queItem.toJson()
@@ -27,8 +27,8 @@ class LevelFadeQueItemTest {
     }
 
     @Test
-    fun testFromJsonQueItem() {
-        val jsonQueItem = JsonQue.QueItem(
+    fun testFromJsonQueueItem() {
+        val jsonQueItem = JsonQueue.QueueItem(
                 pluginName = plugin.name,
                 className = "LevelFadeQueItem",
                 name = "name",

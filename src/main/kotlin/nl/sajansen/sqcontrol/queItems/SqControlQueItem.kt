@@ -3,7 +3,7 @@ package nl.sajansen.sqcontrol.queItems
 import nl.sajansen.sqcontrol.*
 import nl.sajansen.sqcontrol.midi.ByteMidiMessage
 import objects.notifications.Notifications
-import objects.que.JsonQue
+import objects.que.JsonQueue
 import objects.que.QueItem
 import java.awt.Color
 import java.util.logging.Logger
@@ -21,7 +21,7 @@ class SqControlQueItem(
     override var quickAccessColor: Color? = plugin.quickAccessColor
 
     companion object {
-        fun fromJson(plugin: SqControlPlugin, jsonQueItem: JsonQue.QueItem): SqControlQueItem {
+        fun fromJson(plugin: SqControlPlugin, jsonQueItem: JsonQueue.QueueItem): SqControlQueItem {
             val messages: List<MidiMessage> = jsonQueItem.data["commands"]!!.split(";")
                     .map { stringCommands ->
                         val byteArrayCommands = configStringToByteArray(stringCommands)
@@ -50,7 +50,7 @@ class SqControlQueItem(
         throw NotImplementedError("This method is deprecated")
     }
 
-    override fun toJson(): JsonQue.QueItem {
+    override fun toJson(): JsonQueue.QueueItem {
         val jsonItem = super.toJson()
         jsonItem.data["commands"] = messages
                 .map {
