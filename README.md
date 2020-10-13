@@ -2,8 +2,6 @@
 
 For OBS Scene Queue, compatible with Allen & Heath SQ-6
 
-_By Samuel-Anton Jansen_
-
 ### How to use
 
 **Installation**
